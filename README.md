@@ -2,7 +2,25 @@
 
 A full-featured stock trading application built with Ruby on Rails that allows users to buy and sell stocks, manage portfolios, and track their trading activity in real-time.
 
-![Stock Trading App Screenshot](screenshot.png)
+## Screenshots
+
+### User Dashboard
+![User Dashboard](Stock Trading App Dashboard User.png)
+
+### Trading Interface
+![Trading](Stock Trading App Trading.png)
+
+### Portfolio Management
+![Portfolios](Stock Trading App Portfolios.png)
+
+### Wallet System
+![Wallet](Stock Trading App Wallet.png)
+
+### Transactions
+![Transactions](Stock Trading App Transactions.png)
+
+### Admin Dashboard
+![Admin Dashboard](Stock Trading App Dashboard Admin.png)
 
 ## Features
 
