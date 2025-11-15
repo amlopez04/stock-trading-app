@@ -29,7 +29,7 @@ end
     it "shows wallet and logs" do
   TradeLog.create!(user: user, wallet: wallet, transaction_type: "buy",     amount: 100, quantity: 1)
   TradeLog.create!(user: user, wallet: wallet, transaction_type: "deposit", amount: 200, quantity: 0)
-  TradeLog.create!(user: user, wallet: wallet, transaction_type: "sell",    amount: 50,  quantity: 1)  # add this
+  TradeLog.create!(user: user, wallet: wallet, transaction_type: "sell",    amount: 50,  quantity: 1)  
 
   get wallet_path
 

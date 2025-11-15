@@ -1,5 +1,5 @@
 class TraderMailer < ApplicationMailer
-  default from: "no-reply@stockapp.com"
+  default from: ENV.fetch("MAILER_SENDER", "pnmstocktrading@deidei.tech")
 
   # Email for signup confirmation (Devise already does this, but you can customize)
   def confirmation_email(trader)
