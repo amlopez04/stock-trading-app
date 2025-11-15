@@ -5,22 +5,22 @@ A full-featured stock trading application built with Ruby on Rails that allows u
 ## Screenshots
 
 ### User Dashboard
-![User Dashboard](Stock Trading App Dashboard User.png)
+![User Dashboard](./Stock%20Trading%20App%20Dashboard%20User.png)
 
 ### Trading Interface
-![Trading](Stock Trading App Trading.png)
+![Trading](./Stock%20Trading%20App%20Trading.png)
 
 ### Portfolio Management
-![Portfolios](Stock Trading App Portfolios.png)
+![Portfolios](./Stock%20Trading%20App%20Portfolios.png)
 
 ### Wallet System
-![Wallet](Stock Trading App Wallet.png)
+![Wallet](./Stock%20Trading%20App%20Wallet.png)
 
 ### Transactions
-![Transactions](Stock Trading App Transactions.png)
+![Transactions](./Stock%20Trading%20App%20Transactions.png)
 
 ### Admin Dashboard
-![Admin Dashboard](Stock Trading App Dashboard Admin.png)
+![Admin Dashboard](./Stock%20Trading%20App%20Dashboard%20Admin.png)
 
 ## Features
 
