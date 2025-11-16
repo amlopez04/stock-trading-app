@@ -1,6 +1,13 @@
 # frozen_string_literal: true
 
 class Users::RegistrationsController < Devise::RegistrationsController
+  protected
+
+  def after_inactive_sign_up_path_for(resource)
+    flash[:notice] = "We have sent a confirmation email. Please confirm your account."
+    new_user_session_path
+  end
+
   private
 
   def sign_up_params
