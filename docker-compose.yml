@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - RAILS_ENV=production
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - RAILS_HOST=${RAILS_HOST:-localhost}
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
+      - SMTP_ADDRESS=${SMTP_ADDRESS:-smtp.resend.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-resend}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_DOMAIN=${SMTP_DOMAIN:-${RAILS_HOST:-localhost}}
+      - MAILER_SENDER=${MAILER_SENDER:-pnmstocktrading@deidei.tech}
+      - RAILS_MAX_THREADS=${RAILS_MAX_THREADS:-5}
+      - SOLID_QUEUE_IN_PUMA=${SOLID_QUEUE_IN_PUMA:-true}
+      - JOB_CONCURRENCY=${JOB_CONCURRENCY:-1}
+      - PORT=3000
+    command: ./bin/rails server -b 0.0.0.0
+    depends_on:
+      - db
+    volumes:
+      - storage:/rails/storage
+      - tmp:/rails/tmp
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - RAILS_ENV=production
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - DATABASE_URL=${DATABASE_URL}
+      - FINNHUB_API_KEY=${FINNHUB_API_KEY}
+      - RAILS_MAX_THREADS=${RAILS_MAX_THREADS:-5}
+    command: bundle exec bin/jobs
+    depends_on:
+      - db
+    volumes:
+      - storage:/rails/storage
+      - tmp:/rails/tmp
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-stock_trading_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-stock_trading_app}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-stock_trading_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  storage:
+  tmp:
+
