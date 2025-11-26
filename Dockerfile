@@ -74,7 +74,7 @@ USER 1000:1000
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Thruster by default, this can be overwritten at runtime
-# For Coolify, use: ./bin/rails server -b 0.0.0.0
+# Start server via Puma (more reliable than Thruster)
+# For Coolify, the start command should be: ./bin/rails server -b 0.0.0.0
 EXPOSE 3000
-CMD ["./bin/thrust", "./bin/rails", "server"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
