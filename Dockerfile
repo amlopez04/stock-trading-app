@@ -74,7 +74,7 @@ USER 1000:1000
 # Entrypoint prepares the database.
 ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
-# Start server via Puma (more reliable than Thruster)
-# For Coolify, the start command should be: ./bin/rails server -b 0.0.0.0
+# Start server via Puma directly (more reliable)
+# For Coolify, the start command should be: bundle exec puma -C config/puma.rb
 EXPOSE 3000
-CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]

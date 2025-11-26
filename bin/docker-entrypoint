@@ -3,15 +3,24 @@
 # Enable jemalloc for reduced memory usage and latency.
 if [ -z "${LD_PRELOAD+x}" ]; then
     LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
-    export LD_PRELOAD
+    if [ -n "$LD_PRELOAD" ]; then
+        export LD_PRELOAD
+    fi
 fi
 
 # If running the rails server then create or migrate existing database
-# Check if any argument contains "rails" and "server"
-if echo "${@}" | grep -q "rails" && echo "${@}" | grep -q "server"; then
-  echo "Preparing database..."
-  ./bin/rails db:prepare || echo "Database preparation completed (or skipped)"
+if echo "${@}" | grep -qE "(rails|puma)" && echo "${@}" | grep -q "server"; then
+  echo "=== Preparing database ==="
+  ./bin/rails db:prepare || {
+    echo "Warning: Database preparation had issues, but continuing..."
+  }
+  echo "=== Database ready ==="
 fi
 
+echo "=== Starting application: ${@} ==="
+echo "=== Working directory: $(pwd) ==="
+echo "=== Rails environment: ${RAILS_ENV} ==="
+
 # Execute the command (Rails server should keep running)
+# Use exec to replace shell with the command so it becomes PID 1
 exec "${@}"
