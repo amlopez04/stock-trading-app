@@ -23,7 +23,7 @@ services:
       - SOLID_QUEUE_IN_PUMA=${SOLID_QUEUE_IN_PUMA:-true}
       - JOB_CONCURRENCY=${JOB_CONCURRENCY:-1}
       - PORT=3000
-    command: /bin/bash -c "echo '=== Container Starting ===' && ./bin/rails db:prepare && echo '=== Starting Puma ===' && bundle exec puma -C config/puma.rb"
+    command: /rails/bin/start-server
     depends_on:
       - db
     volumes:

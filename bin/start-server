@@ -1,0 +1,33 @@
+#!/bin/bash
+set -x  # Enable debug output
+
+echo "=========================================="
+echo "Starting Rails Application Container"
+echo "=========================================="
+echo "Working directory: $(pwd)"
+echo "RAILS_ENV: ${RAILS_ENV}"
+echo "PORT: ${PORT}"
+echo "DATABASE_URL: ${DATABASE_URL:0:50}..." # Show first 50 chars only
+echo "=========================================="
+
+# List important directories
+echo "Checking directories..."
+ls -la /rails/bin/ || echo "WARNING: /rails/bin/ not found"
+ls -la ./bin/ || echo "WARNING: ./bin/ not found"
+
+# Prepare database
+echo "=========================================="
+echo "Preparing database..."
+echo "=========================================="
+./bin/rails db:prepare || {
+  echo "ERROR: Database preparation failed!"
+  echo "This might be okay if the database is already set up."
+}
+
+# Start Puma
+echo "=========================================="
+echo "Starting Puma server..."
+echo "=========================================="
+echo "Puma will bind to: 0.0.0.0:${PORT:-3000}"
+exec bundle exec puma -C config/puma.rb
+

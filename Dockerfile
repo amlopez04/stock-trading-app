@@ -61,17 +61,17 @@ FROM base
 COPY --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --from=build /rails /rails
 
-# Make entrypoint script executable (in case permissions weren't preserved)
-RUN chmod +x /rails/bin/docker-entrypoint
+# Make entrypoint and start scripts executable (in case permissions weren't preserved)
+RUN chmod +x /rails/bin/docker-entrypoint /rails/bin/start-server
 
 # Run and own only the runtime files as a non-root user for security
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash && \
     chown -R rails:rails db log storage tmp && \
-    chmod +x /rails/bin/docker-entrypoint
+    chmod +x /rails/bin/docker-entrypoint /rails/bin/start-server
 USER 1000:1000
 
 # Prepare database and start Puma
 EXPOSE 3000
-# Simple command that will definitely produce output
-CMD ["sh", "-c", "echo 'Container started' && pwd && ls -la /rails/bin/ && echo 'Preparing database...' && ./bin/rails db:prepare && echo 'Starting Puma...' && exec bundle exec puma -C config/puma.rb"]
+# Use the start script which has better logging
+CMD ["/rails/bin/start-server"]
