@@ -1,29 +1,29 @@
 #!/bin/bash
-set -x  # Enable debug mode to see what's happening
 
-echo "ENTRYPOINT: Script started" >&2
-echo "ENTRYPOINT: Arguments received: $@" >&2
-echo "ENTRYPOINT: Working directory: $(pwd)" >&2
-echo "ENTRYPOINT: RAILS_ENV=${RAILS_ENV}" >&2
-echo "ENTRYPOINT: PORT=${PORT}" >&2
+# Force output to stdout/stderr immediately
+exec > >(cat)
+exec 2>&1
+
+echo "=== ENTRYPOINT STARTED ==="
+echo "Args: $@"
+echo "PWD: $(pwd)"
+echo "RAILS_ENV: ${RAILS_ENV}"
+echo "PORT: ${PORT}"
 
 # Enable jemalloc if available
 if [ -z "${LD_PRELOAD+x}" ]; then
     LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit 2>/dev/null)
     if [ -n "$LD_PRELOAD" ]; then
         export LD_PRELOAD
+        echo "Using jemalloc: $LD_PRELOAD"
     fi
 fi
 
-# Prepare database if running web server
-if echo "${@}" | grep -qE "(rails.*server|puma)"; then
-  echo "ENTRYPOINT: Preparing database..." >&2
-  ./bin/rails db:prepare 2>&1 || echo "ENTRYPOINT: Database prep warning (continuing)" >&2
-  echo "ENTRYPOINT: Database ready" >&2
-fi
+# Prepare database
+echo "=== Preparing database ==="
+./bin/rails db:prepare || echo "Database prep completed with warnings"
+echo "=== Database ready ==="
 
-echo "ENTRYPOINT: About to execute: $@" >&2
-echo "ENTRYPOINT: Starting application..." >&2
-
-# Execute the command - use exec to replace shell process
+# Execute the command
+echo "=== Starting: $@ ==="
 exec "$@"

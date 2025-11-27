@@ -72,9 +72,6 @@ RUN groupadd --system --gid 1000 rails && \
 USER 1000:1000
 
 # Entrypoint prepares the database.
-ENTRYPOINT ["/rails/bin/docker-entrypoint"]
-
-# Start server via Puma directly (more reliable)
-# For Coolify, the start command should be: bundle exec puma -C config/puma.rb
 EXPOSE 3000
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+# Use a shell form CMD so we can run multiple commands
+CMD ["/bin/bash", "-c", "/rails/bin/docker-entrypoint bundle exec puma -C config/puma.rb"]
