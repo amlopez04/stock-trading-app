@@ -1,33 +1,64 @@
-#!/bin/bash
+#!/bin/sh
 set -x  # Enable debug output
+
+# Force output to stdout/stderr immediately
+exec >&1
+exec 2>&1
 
 echo "=========================================="
 echo "Starting Rails Application Container"
 echo "=========================================="
 echo "Working directory: $(pwd)"
 echo "RAILS_ENV: ${RAILS_ENV}"
-echo "PORT: ${PORT}"
-echo "DATABASE_URL: ${DATABASE_URL:0:50}..." # Show first 50 chars only
+echo "PORT: ${PORT:-3000}"
+if [ -n "$DATABASE_URL" ]; then
+  echo "DATABASE_URL: $(echo $DATABASE_URL | cut -c1-50)..."
+else
+  echo "DATABASE_URL: NOT SET"
+fi
 echo "=========================================="
 
 # List important directories
 echo "Checking directories..."
-ls -la /rails/bin/ || echo "WARNING: /rails/bin/ not found"
-ls -la ./bin/ || echo "WARNING: ./bin/ not found"
+ls -la /rails/bin/ 2>&1 || echo "WARNING: /rails/bin/ not found"
+ls -la ./bin/ 2>&1 || echo "WARNING: ./bin/ not found"
 
-# Prepare database
+# Check if Rails is available
+echo "Checking Rails..."
+./bin/rails --version 2>&1 || echo "WARNING: Rails command not found"
+
+# Prepare database (don't exit on error)
 echo "=========================================="
 echo "Preparing database..."
 echo "=========================================="
-./bin/rails db:prepare || {
+if ./bin/rails db:prepare 2>&1; then
+  echo "Database preparation successful"
+else
   echo "ERROR: Database preparation failed!"
   echo "This might be okay if the database is already set up."
-}
+  echo "Continuing anyway..."
+fi
 
 # Start Puma
 echo "=========================================="
 echo "Starting Puma server..."
 echo "=========================================="
 echo "Puma will bind to: 0.0.0.0:${PORT:-3000}"
-exec bundle exec puma -C config/puma.rb
+echo "Current working directory: $(pwd)"
+echo "Rails environment: ${RAILS_ENV}"
+echo "Bundle path: $(which bundle)"
+echo "Puma config exists: $([ -f config/puma.rb ] && echo 'YES' || echo 'NO')"
+echo "=========================================="
+
+# Start Puma - this should keep the container running
+# Use exec to replace shell with Puma process
+if bundle exec puma -C config/puma.rb 2>&1; then
+  echo "Puma started successfully"
+else
+  echo "ERROR: Puma failed to start!"
+  echo "Exit code: $?"
+  echo "Sleeping for 60 seconds to allow log inspection..."
+  sleep 60
+  exit 1
+fi
 
