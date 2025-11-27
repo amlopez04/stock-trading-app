@@ -20,7 +20,10 @@ fi
 echo "=== Starting application: ${@} ==="
 echo "=== Working directory: $(pwd) ==="
 echo "=== Rails environment: ${RAILS_ENV} ==="
+echo "=== Port: ${PORT:-3000} ==="
 
 # Execute the command (Rails server should keep running)
 # Use exec to replace shell with the command so it becomes PID 1
+# Don't exit on error - let Puma handle it
+set +e
 exec "${@}"
