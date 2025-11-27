@@ -1,29 +1,29 @@
 #!/bin/bash
+set -x  # Enable debug mode to see what's happening
 
-# Enable jemalloc for reduced memory usage and latency.
+echo "ENTRYPOINT: Script started" >&2
+echo "ENTRYPOINT: Arguments received: $@" >&2
+echo "ENTRYPOINT: Working directory: $(pwd)" >&2
+echo "ENTRYPOINT: RAILS_ENV=${RAILS_ENV}" >&2
+echo "ENTRYPOINT: PORT=${PORT}" >&2
+
+# Enable jemalloc if available
 if [ -z "${LD_PRELOAD+x}" ]; then
-    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit)
+    LD_PRELOAD=$(find /usr/lib -name libjemalloc.so.2 -print -quit 2>/dev/null)
     if [ -n "$LD_PRELOAD" ]; then
         export LD_PRELOAD
     fi
 fi
 
-# If running the rails server or puma then create or migrate existing database
+# Prepare database if running web server
 if echo "${@}" | grep -qE "(rails.*server|puma)"; then
-  echo "=== Preparing database ==="
-  ./bin/rails db:prepare || {
-    echo "Warning: Database preparation had issues, but continuing..."
-  }
-  echo "=== Database ready ==="
+  echo "ENTRYPOINT: Preparing database..." >&2
+  ./bin/rails db:prepare 2>&1 || echo "ENTRYPOINT: Database prep warning (continuing)" >&2
+  echo "ENTRYPOINT: Database ready" >&2
 fi
 
-echo "=== Starting application: ${@} ==="
-echo "=== Working directory: $(pwd) ==="
-echo "=== Rails environment: ${RAILS_ENV} ==="
-echo "=== Port: ${PORT:-3000} ==="
+echo "ENTRYPOINT: About to execute: $@" >&2
+echo "ENTRYPOINT: Starting application..." >&2
 
-# Execute the command (Rails server should keep running)
-# Use exec to replace shell with the command so it becomes PID 1
-# Don't exit on error - let Puma handle it
-set +e
-exec "${@}"
+# Execute the command - use exec to replace shell process
+exec "$@"
