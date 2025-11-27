@@ -73,5 +73,5 @@ USER 1000:1000
 
 # Prepare database and start Puma
 EXPOSE 3000
-# Run database prep and start Puma - output everything to stdout/stderr
-CMD ["/bin/bash", "-c", "echo '=== Container Starting ===' 1>&2; echo 'Working directory:' $(pwd) 1>&2; echo 'RAILS_ENV='${RAILS_ENV} 1>&2; echo 'PORT='${PORT} 1>&2; echo '=== Preparing Database ===' 1>&2; ./bin/rails db:prepare 2>&1 || echo 'Database prep completed with warnings' 1>&2; echo '=== Starting Puma Server ===' 1>&2; bundle exec puma -C config/puma.rb 2>&1"]
+# Simple command that will definitely produce output
+CMD ["sh", "-c", "echo 'Container started' && pwd && ls -la /rails/bin/ && echo 'Preparing database...' && ./bin/rails db:prepare && echo 'Starting Puma...' && exec bundle exec puma -C config/puma.rb"]
