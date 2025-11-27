@@ -71,7 +71,7 @@ RUN groupadd --system --gid 1000 rails && \
     chmod +x /rails/bin/docker-entrypoint
 USER 1000:1000
 
-# Entrypoint prepares the database.
+# Prepare database and start Puma
 EXPOSE 3000
-# Use a shell form CMD so we can run multiple commands
-CMD ["/bin/bash", "-c", "/rails/bin/docker-entrypoint bundle exec puma -C config/puma.rb"]
+# Run database prep and start Puma in one command
+CMD ["/bin/bash", "-c", "echo 'Starting...' && ./bin/rails db:prepare && echo 'Database ready, starting Puma...' && bundle exec puma -C config/puma.rb"]
