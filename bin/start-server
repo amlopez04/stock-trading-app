@@ -46,19 +46,13 @@ echo "=========================================="
 echo "Puma will bind to: 0.0.0.0:${PORT:-3000}"
 echo "Current working directory: $(pwd)"
 echo "Rails environment: ${RAILS_ENV}"
-echo "Bundle path: $(which bundle)"
+echo "Bundle path: $(which bundle 2>&1 || echo 'NOT FOUND')"
 echo "Puma config exists: $([ -f config/puma.rb ] && echo 'YES' || echo 'NO')"
+echo "Ruby version: $(ruby --version 2>&1 || echo 'NOT FOUND')"
 echo "=========================================="
 
-# Start Puma - this should keep the container running
-# Use exec to replace shell with Puma process
-if bundle exec puma -C config/puma.rb 2>&1; then
-  echo "Puma started successfully"
-else
-  echo "ERROR: Puma failed to start!"
-  echo "Exit code: $?"
-  echo "Sleeping for 60 seconds to allow log inspection..."
-  sleep 60
-  exit 1
-fi
+# Start Puma - use exec to replace shell with Puma process (required for Docker)
+# This makes Puma PID 1, so Docker signals go directly to it
+echo "Executing: bundle exec puma -C config/puma.rb"
+exec bundle exec puma -C config/puma.rb
 
