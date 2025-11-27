@@ -10,33 +10,95 @@ This guide will help you deploy the Stock Trading App to Coolify.
 
 ## Deployment Options
 
-### Option 1: Using Docker Compose (Recommended)
+### Option 1: Deploy as Separate Services (Recommended for Coolify)
 
-Coolify can automatically detect and use `docker-compose.yml` files.
+Coolify works best when you create separate resources for each service.
 
-#### Steps:
+#### Step 1: Create PostgreSQL Database
 
-1. **Connect Repository**
-   - In Coolify, go to "Resources" → "New Resource"
-   - Select "Docker Compose"
-   - Connect your Git repository
-   - Coolify will detect the `docker-compose.yml` file
+1. In Coolify Dashboard:
+   - Go to **Resources** → **New Resource**
+   - Select **PostgreSQL** (or **Database**)
+   - Configure:
+     - **Name**: `stock-trading-db`
+     - **Database Name**: `stock_trading_app`
+     - **User**: `stock_trading_user`
+     - **Password**: (set a secure password, save it!)
+   - Click **Create**
+   - **Copy the Internal Connection String** (you'll need this for `DATABASE_URL`)
 
-2. **Configure Environment Variables**
-   - Add all required environment variables in Coolify's environment section
-   - See `.env.example` for a complete list
-   - **Important variables:**
-     - `RAILS_MASTER_KEY` - Get from `config/master.key`
-     - `DATABASE_URL` - Will be auto-generated if using Coolify's PostgreSQL service
-     - `FINNHUB_API_KEY` - Your Finnhub API key
-     - `SMTP_PASSWORD` - Your Resend API key (if using Resend)
-     - `RAILS_HOST` - Your domain (e.g., `app.yourdomain.com`)
+#### Step 2: Create Web Application
 
-3. **Deploy**
-   - Click "Deploy"
-   - Coolify will build and start all services (web, worker, db)
+1. In Coolify Dashboard:
+   - Go to **Resources** → **New Resource**
+   - Select **Application** (or **New Application**)
+   - **Connect your Git repository**:
+     - Click **Connect GitHub** (or GitLab/Gitea)
+     - Authorize Coolify
+     - Select your repository: `stock-trading-app`
+     - Select branch: `main` (or `master`)
 
-### Option 2: Using Dockerfile (Single Service)
+2. **Configure Build Settings**:
+   - **Build Pack**: `Dockerfile` (Coolify should auto-detect)
+   - **Dockerfile Location**: `Dockerfile` (root)
+   - **Port**: `3000`
+   - **Start Command**: `./bin/rails server -b 0.0.0.0`
+
+3. **Add Environment Variables**:
+   Click **Environment Variables** and add:
+   ```
+   RAILS_ENV=production
+   RAILS_MASTER_KEY=<paste from config/master.key>
+   DATABASE_URL=<paste the connection string from Step 1>
+   RAILS_HOST=<your-app-name.your-coolify-domain.com>
+   FINNHUB_API_KEY=<your-finnhub-api-key>
+   SMTP_ADDRESS=smtp.resend.com
+   SMTP_PORT=587
+   SMTP_USERNAME=resend
+   SMTP_PASSWORD=<your-resend-api-key>
+   SMTP_DOMAIN=<your-app-name.your-coolify-domain.com>
+   MAILER_SENDER=pnmstocktrading@deidei.tech
+   RAILS_MAX_THREADS=5
+   SOLID_QUEUE_IN_PUMA=true
+   JOB_CONCURRENCY=1
+   PORT=3000
+   ```
+
+4. **Deploy**:
+   - Click **Deploy** or **Save & Deploy**
+   - Wait for build to complete
+
+#### Step 3: Create Background Worker
+
+1. In Coolify Dashboard:
+   - Go to **Resources** → **New Resource**
+   - Select **Application**
+   - **Connect the same Git repository**:
+     - Select: `stock-trading-app`
+     - Branch: `main`
+
+2. **Configure Build Settings**:
+   - **Build Pack**: `Dockerfile`
+   - **Dockerfile Location**: `Dockerfile`
+   - **Start Command**: `bundle exec bin/jobs`
+   - **Port**: (leave empty or set to 3001, not used)
+
+3. **Add Environment Variables** (same as web service):
+   ```
+   RAILS_ENV=production
+   RAILS_MASTER_KEY=<same as web service>
+   DATABASE_URL=<same as web service>
+   FINNHUB_API_KEY=<same as web service>
+   RAILS_MAX_THREADS=5
+   ```
+   (No need for PORT, SMTP, or RAILS_HOST for worker)
+
+4. **Deploy**:
+   - Click **Deploy**
+
+### Option 2: Using Docker Compose (If Available)
+
+If your Coolify version supports Docker Compose:
 
 If you prefer to deploy without docker-compose:
 
@@ -69,13 +131,13 @@ Copy these into Coolify's environment variables section:
 RAILS_ENV=production
 RAILS_MASTER_KEY=<from config/master.key>
 DATABASE_URL=<postgresql://user:pass@host:5432/dbname>
-RAILS_HOST=<your-domain.com>
+RAILS_HOST=<your-app-name.your-coolify-domain.com>
 FINNHUB_API_KEY=<your-finnhub-key>
 SMTP_ADDRESS=smtp.resend.com
 SMTP_PORT=587
 SMTP_USERNAME=resend
 SMTP_PASSWORD=<your-resend-key>
-SMTP_DOMAIN=<your-domain.com>
+SMTP_DOMAIN=<your-app-name.your-coolify-domain.com>
 MAILER_SENDER=pnmstocktrading@deidei.tech
 RAILS_MAX_THREADS=5
 SOLID_QUEUE_IN_PUMA=true
